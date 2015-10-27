@@ -4,6 +4,12 @@ var stats, statsWidget;
 
 var currentPlayer;
 var playMesh;
+var isPlaying;
+
+var mouse = new THREE.Vector2();
+var mouseRay = new THREE.Raycaster();
+var mouseDown = new THREE.Vector2();
+var mouseDownRay = new THREE.Raycaster();
 
 init();
 animate();
@@ -40,7 +46,6 @@ function init() {
 	stats.appendChild(statsWidget.domElement);
 
 	controls = new THREE.OrbitControls(camera, renderer.domElement);
-	// controls.addEventListener( 'change', render );
 	controls.enableDamping = true;
 	controls.dampingFactor = 0.25;
 	controls.enableZoom = false;
@@ -87,9 +92,10 @@ function addPlayerButtons()
 	playTexture.repeat.set(1, 1);
 
 	var playGeom = new THREE.CubeGeometry( 2, 2, 2 );
-	var playMat = new THREE.MeshBasicMaterial( {map: playTexture} );
+	var playMat = new THREE.MeshBasicMaterial( {map: playTexture, transparent: true, opacity: 0.5, color: 0xFFFFFF} );
 	playMesh = new THREE.Mesh(playGeom, playMat);
-	playMesh.position.y = 5;
+	playMesh.position.y = 3;
+	playMesh.name = "PlayButton";
 	scene.add(playMesh);
 }
 
@@ -128,13 +134,70 @@ function addTombstone(amount) {
 	}
 }
 
+function onMouseMove( event ) {
+
+	// calculate mouse position in normalized device coordinates
+	// (-1 to +1) for both components
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;		
+	mouseRay.setFromCamera( mouse, camera );
+
+	//checkForMouseMoveCollisions();
+
+}
+
+function checkForMouseMoveCollisions()
+{
+	var intersects = mouseRay.intersectObjects( scene.children );
+
+	for ( var i = 0; i < intersects.length; i++ ) {
+		// do something...
+	}
+}
+
+function onMouseDown( event ) {
+
+	// calculate mouse position in normalized device coordinates
+	// (-1 to +1) for both components
+	mouseDown.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouseDown.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+	mouseDownRay.setFromCamera( mouseDown, camera );
+
+	checkMouseDownCollisions();
+
+}
+
+function checkMouseDownCollisions()
+{
+	var intersects = mouseDownRay.intersectObjects( scene.children );
+
+	for ( var i = 0; i < intersects.length; i++ ) {
+		if (intersects[i].object.name == "PlayButton") {
+			if (currentPlayer)
+			{
+				if (!isPlaying) {
+					isPlaying = true;
+					currentPlayer.play();
+					intersects[ i ].object.material.color.set( 0xff0000 );
+				}
+				else
+				{
+					isPlaying = false;
+					currentPlayer.pause();	
+					intersects[ i ].object.material.color.set( 0x0000ff );
+				}
+			}
+		}
+	}
+}
+
 function animate() {
 	requestAnimationFrame(animate);
 
 	playMesh.rotation.x += 0.01;
 	playMesh.rotation.y += 0.01;
 	controls.update();
-	
+
 	render();
 	statsWidget.update();
 }
@@ -150,3 +213,6 @@ function onWindowResize() {
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	animate();
 }
+
+window.addEventListener( 'mousemove', onMouseMove, false );
+window.addEventListener( 'mousedown', onMouseDown, false );
