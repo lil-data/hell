@@ -29,3 +29,9 @@
 
 ####Steps
 
+####Choices
+
+- Could use THREE.Audio to spatialise sound in scene
+    + Three files, go to each gravestone to hear it
+
+- Tombstone equaliser graph 

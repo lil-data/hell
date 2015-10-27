@@ -68,9 +68,9 @@ function addTombstone(amount)
 		amount: 0,
 		curveSegments: 100,
 		bevelEnabled: true,
-		bevelSegments: 2,
-		steps: 2,
-		bevelSize: 0,
+		bevelSegments: 5,
+		steps: 5,
+		bevelSize: 0.05,
 		bevelThickness: 0.1
 	};
 
