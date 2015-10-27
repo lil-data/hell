@@ -35,3 +35,14 @@
     + Three files, go to each gravestone to hear it
 
 - Tombstone equaliser graph 
+
+
+####SoundCloud API
+
+GET PC Music user
+curl "http://api.soundcloud.com/users/48366867?client_id=4be5f67fb3f99bbf86796c7a713b124b"
+
+GET PC Music track
+curl "http://api.soundcloud.com/tracks/173324934?client_id=4be5f67fb3f99bbf86796c7a713b124b"
+
+
