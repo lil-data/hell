@@ -53,3 +53,22 @@ GET PC Music track
 curl "http://api.soundcloud.com/tracks/173324934?client_id=4be5f67fb3f99bbf86796c7a713b124b"
 
 
+alex notes
+
+
+
+Extreme colours rather than textures
+
+Like a spooky red & black OWEEN universe.
+
+glitchy/hackery
+evil/minimal black & red one
+
+3D lighting effects
+
+blood rain
+
+fire
+
+temperature graph 666 degrees
+

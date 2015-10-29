@@ -3,12 +3,30 @@
 	<head>
 		<title>PC Music – Halloween 2015</title>
 		<link rel="stylesheet" type="text/css" href="css/main.css">
-		<script src="js/sdk-3.0.0.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/three.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/stats.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/OrbitControls.js" type="text/javascript" charset="utf-8"></script>
+
+		<script src="js/lib/sdk-3.0.0.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/lib/three.min.js" type="text/javascript" charset="utf-8"></script>
+
+		<script src="js/lib/OrbitControls.js" type="text/javascript" charset="utf-8"></script>
 		<!-- <script src="js/FirstPersonControls.js" type="text/javascript" charset="utf-8"></script> -->
+
+		<script src="js/shaders/CopyShader.js"></script>
+		<script src="js/shaders/DigitalGlitch.js"></script>
+		
+		<script src="js/postprocessing/EffectComposer.js"></script>
+		<script src="js/postprocessing/RenderPass.js"></script>
+		<script src="js/postprocessing/MaskPass.js"></script>
+		<script src="js/postprocessing/ShaderPass.js"></script>
+		<script src="js/postprocessing/GlitchPass.js"></script>
+
+		<script src="js/lib/TextGeometry.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/lib/FontUtils.js" type="text/javascript" charset="utf-8"></script>
+		<script src="fonts/mensch.js" type="text/javascript" charset="utf-8"></script>
+		
+		<script src="js/lib/stats.min.js" type="text/javascript" charset="utf-8"></script>
+		
 		<script src="js/scene.js" type="text/javascript" charset="utf-8" defer></script>
+
 	</head>
 	<body>
 		<div id="stats"></div>
