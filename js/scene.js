@@ -2,6 +2,9 @@
 var container, camera, controls, scene, renderer;
 var rotSpeed = 0.015;
 
+// GPUParticleSystem
+var tick = 0, options, spawnerOptions, particleSystem;
+
 // Stats
 var stats, statsWidget;
 
@@ -27,6 +30,8 @@ var lavaUniforms, lavaMaterial, lavaMesh;
 // Lights
 var light1, light2, light3, light4;
 
+var tombstone, tombstoneMesh;
+
 init();
 animate();
 
@@ -39,10 +44,10 @@ function init() {
 	camera.lookAt(new THREE.Vector3(1, 1, 1));
 
 	scene = new THREE.Scene();
-	scene.fog = new THREE.FogExp2(0x000000, 0.01);
+	scene.fog = new THREE.FogExp2(0xFF0000, 0.1);
 
 	renderer = new THREE.WebGLRenderer();
-	renderer.setClearColor(scene.fog.color, 1);
+	renderer.setClearColor(0x100000, 1);
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	container = document.getElementById('container');
 	container.appendChild(renderer.domElement);
@@ -52,18 +57,21 @@ function init() {
 	// stats = document.getElementById('stats');
 	// stats.appendChild(statsWidget.domElement);
 
-	// controls = new THREE.OrbitControls(camera, renderer.domElement);
-	// controls.enableDamping = true;
-	// controls.dampingFactor = 0.9;
-	// controls.enableZoom = false;
+	controls = new THREE.OrbitControls(camera, renderer.domElement);
+	controls.enableDamping = true;
+	controls.dampingFactor = 0.9;
+	controls.enableZoom = true;
 
+	initParticleSystem();
 	initSoundCloud();
 	addPlayerButtons();
 	hellSprites();
-	// singleTombstone();
+	singleTombstone(1.5, 1.5, 1.5, "t1");
+	singleTombstone(1, 1, 1, "t2");
+	singleTombstone(2, 2, 2, "t3");
 	groundIsLava();
-	addText("fragments of a lost trinity");
-	// addTombstones(10);
+	addText("unholy trinity");
+	// addTombstones(1);
 	// groundIsWorms();
 
 	composer = new THREE.EffectComposer(renderer);
@@ -75,11 +83,38 @@ function init() {
 	window.addEventListener('resize', onWindowResize, false);
 }
 
-function addLights()
-{
+function initParticleSystem() {
+	particleSystem = new THREE.GPUParticleSystem({
+		maxParticles: 250000
+	});
+	scene.add(particleSystem);
 
-	var ambientLight = new THREE.AmbientLight( 0x000000 );
-	scene.add( ambientLight );
+	// options passed during each spawned
+	options = {
+		position: new THREE.Vector3(),
+		positionRandomness: 0.3,
+		velocity: new THREE.Vector3(),
+		velocityRandomness: 0.5,
+		color: 0xaa88ff,
+		colorRandomness: 0.2,
+		turbulence: 0.5,
+		lifetime: 2,
+		size: 5,
+		sizeRandomness: 1
+	};
+
+	spawnerOptions = {
+		spawnRate: 15000,
+		horizontalSpeed: 1.5,
+		verticalSpeed: 1.33,
+		timeScale: 1
+	};
+}
+
+function addLights() {
+
+	var ambientLight = new THREE.AmbientLight(0x000000);
+	scene.add(ambientLight);
 
 	// var sphere = new THREE.SphereGeometry( 0.1, 16, 16 );
 
@@ -100,17 +135,17 @@ function addLights()
 	// scene.add( light4 );
 
 	var lights = [];
-	lights[0] = new THREE.PointLight( 0xffffff, 100, 0 );
-	lights[1] = new THREE.PointLight( 0xffffff, 100, 0 );
-	lights[2] = new THREE.PointLight( 0xffffff, 100, 0 );
+	lights[0] = new THREE.PointLight(0xffffff, 100, 0);
+	lights[1] = new THREE.PointLight(0xffffff, 100, 0);
+	lights[2] = new THREE.PointLight(0xffffff, 100, 0);
 
-	lights[0].position.set( 0, 200, 0 );
-	lights[1].position.set( 100, 200, 100 );
-	lights[2].position.set( -100, -200, -100 );
+	lights[0].position.set(0, 200, 0);
+	lights[1].position.set(100, 200, 100);
+	lights[2].position.set(-100, -200, -100);
 
-	scene.add( lights[0] );
-	scene.add( lights[1] );
-	scene.add( lights[2] );
+	scene.add(lights[0]);
+	scene.add(lights[1]);
+	scene.add(lights[2]);
 
 }
 
@@ -125,6 +160,7 @@ function groundIsWorms() {
 		color: 0xff0000,
 		side: THREE.DoubleSide
 	});
+	var floorGeometry = new THREE.PlaneGeometry(100, 100, 100, 100);
 	var floorGeometry = new THREE.PlaneGeometry(100, 100, 100, 100);
 	var floor = new THREE.Mesh(floorGeometry, material);
 	floor.rotateX(Math.PI / 2);
@@ -171,12 +207,10 @@ function groundIsLava() {
 	var size = 0.65;
 
 	lavaMaterial = new THREE.ShaderMaterial({
-
 		uniforms: lavaUniforms,
 		vertexShader: document.getElementById('vertexShader').textContent,
 		fragmentShader: document.getElementById('fragmentShader').textContent,
 		side: THREE.DoubleSide
-
 	});
 
 	// var geometry = new THREE.PlaneGeometry(100, 100, 100, 100);
@@ -216,9 +250,9 @@ function hellSprites() {
 	for (i = 0; i < 1000; i++) {
 
 		var vertex = new THREE.Vector3();
-		vertex.x = Math.random() * 2000 - 1000;
-		vertex.y = Math.random() * 2000 - 1000;
-		vertex.z = Math.random() * 2000 - 1000;
+		vertex.x = Math.random() * 3000 - 2000;
+		vertex.y = Math.random() * 3000 - 2000;
+		vertex.z = Math.random() * 3000 - 2000;
 
 		geometry.vertices.push(vertex);
 
@@ -253,7 +287,7 @@ function hellSprites() {
 			size: size,
 			map: sprite,
 			blending: THREE.AdditiveBlending,
-			depthTest: false,
+			depthTest: true,
 			transparent: true
 		});
 		pMaterials[i].color.setHSL(color[0], color[1], color[2]);
@@ -316,8 +350,8 @@ function addPlayerButtons() {
 	scene.add(playMesh);
 }
 
-function singleTombstone(amount) {
-	var tombstone = new THREE.Shape();
+function singleTombstone(x, y, z, name) {
+	tombstone = new THREE.Shape();
 	var texture = THREE.ImageUtils.loadTexture("textures/shell.jpg");
 	texture.wrapS = THREE.RepeatWrapping;
 	texture.wrapT = THREE.RepeatWrapping;
@@ -339,16 +373,18 @@ function singleTombstone(amount) {
 	};
 
 	var geometry = new THREE.ExtrudeGeometry(tombstone, extrudeSettings);
-	var mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+	tombstoneMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
 		map: texture,
-		color: 0xff0000
+		color: 0x920001
 	}));
-	mesh.position.x = 0;
-	mesh.position.z = 0;
-	mesh.scale.x = 1.5;
-	mesh.scale.y = 1.5;
-	mesh.scale.z = 1.5;
-	scene.add(mesh);
+	tombstoneMesh.position.x = x;
+	tombstoneMesh.position.y = y;
+	tombstoneMesh.position.z = z;
+	tombstoneMesh.scale.x = 0.25;
+	tombstoneMesh.scale.y = 0.25;
+	tombstoneMesh.scale.z = 0.25;
+	tombstoneMesh.name = name;
+	scene.add(tombstoneMesh);
 }
 
 function addTombstones(amount) {
@@ -445,13 +481,18 @@ function animate() {
 
 	var time = Date.now();
 
-	playMesh.rotation.x += 0.01;
-	playMesh.rotation.y += 0.01;
-	playMesh.rotation.z += 0.01;
-	// controls.update();
+	// playMesh.rotation.x += 0.01;
+	// playMesh.rotation.y += 0.01;
+	// playMesh.rotation.z += 0.01;
+
+	controls.update();
+	updateParticleSystem();
 	updatePoints();
 	updateLava();
-	cameraOrbit();
+	// cameraOrbit();
+	tombstoneOrbit("t1");
+	tombstoneOrbit("t2");
+	tombstoneOrbit("t3");
 	// updateLights();
 	composer.render();
 	// render();
@@ -462,29 +503,54 @@ function render() {
 	renderer.render(scene, camera);
 }
 
-function updateLights()
-{
+function updateParticleSystem() {
+
+	var tomb = scene.getObjectByName("t1");
+	// console.log(tomb.position.x);
+
+	var delta = clock.getDelta() * spawnerOptions.timeScale;
+	tick += delta;
+
+	if (tick < 0) tick = 0;
+
+	if (delta > 0) {
+		// options.position.x = Math.sin(tick * spawnerOptions.horizontalSpeed) * 20;
+		// options.position.y = Math.sin(tick * spawnerOptions.verticalSpeed) * 10;
+		// options.position.z = Math.sin(tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed) * 5;
+
+		options.position.x = tomb.position.x;
+		options.position.y = tomb.position.y;
+		options.position.z = tomb.position.z;
+
+		for (var x = 0; x < spawnerOptions.spawnRate * delta; x++) {
+			particleSystem.spawnParticle(options);
+		}
+	}
+
+	particleSystem.update(tick);
+}
+
+function updateLights() {
 	var time = Date.now() * 0.0005;
 
 	// light1.position.x = Math.sin( time * 0.7 ) * 3;
 	// light1.position.y = Math.cos( time * 0.5 ) * 4;
 	// light1.position.z = Math.cos( time * 0.3 ) * 3;
 
-	light2.position.x = Math.cos( time * 0.3 ) * 3;
-	light2.position.y = Math.sin( time * 0.5 ) * 4;
-	light2.position.z = Math.sin( time * 0.7 ) * 3;
+	light2.position.x = Math.cos(time * 0.3) * 3;
+	light2.position.y = Math.sin(time * 0.5) * 4;
+	light2.position.z = Math.sin(time * 0.7) * 3;
 
-	light3.position.x = Math.sin( time * 0.7 ) * 3;
-	light3.position.y = Math.cos( time * 0.3 ) * 4;
-	light3.position.z = Math.sin( time * 0.5 ) * 3;
+	light3.position.x = Math.sin(time * 0.7) * 3;
+	light3.position.y = Math.cos(time * 0.3) * 4;
+	light3.position.z = Math.sin(time * 0.5) * 3;
 
-	light4.position.x = Math.sin( time * 0.3 ) * 3;
-	light4.position.y = Math.cos( time * 0.7 ) * 4;
-	light4.position.z = Math.sin( time * 0.5 ) * 3;
+	light4.position.x = Math.sin(time * 0.3) * 3;
+	light4.position.y = Math.cos(time * 0.7) * 4;
+	light4.position.z = Math.sin(time * 0.5) * 3;
 }
 
-function updateLava()
-{
+function updateLava() {
 	var delta = 50 * clock.getDelta();
 
 	lavaUniforms.time.value += 0.2 * delta;
@@ -494,21 +560,45 @@ function updateLava()
 
 }
 
-function cameraOrbit(){
+function cameraOrbit() {
+	var x = camera.position.x,
+		y = camera.position.y,
+		z = camera.position.z;
 
-    var x = camera.position.x,
-        y = camera.position.y,
-        z = camera.position.z;
-
-    camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
-    camera.position.y = y * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
-    camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
-    
-    console.log("(" + camera.position.x + ", " + camera.position.y + ", " + camera.position.z + ")");
+	camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
+	camera.position.y = y * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+	camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+	// console.log("(" + camera.position.x + ", " + camera.position.y + ", " + camera.position.z + ")");
 
 	camera.lookAt(new THREE.Vector3(1, 1, 1));
-    
-} 
+}
+
+function tombstoneOrbit(name) {
+	for (var i = 0; i < scene.children.length; i++) {
+		var object = scene.children[i];
+
+		if (object.name == name) {
+			var x = object.position.x,
+				y = object.position.y,
+				z = object.position.z;
+
+			object.position.x = ((x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed + i / 1000)));
+			object.position.y = ((y * Math.cos(rotSpeed) - x * Math.sin(rotSpeed + i / 1000)));
+			object.position.z = ((z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed + i / 1000)));
+
+			object.rotation.x += 0.025 + i / 1000;
+			object.rotation.y += 0.025 + i / 1000;
+			object.rotation.z += 0.025 + i / 1000;
+		}
+	}
+
+
+	// tombstoneMesh.rotateOnAxis(new THREE.Vector3( 2, 2, 2 ), 0.1);
+	// console.log(Math.sin(rotSpeed));
+
+	// quaternion = new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1,1,1), Math.PI / 2 );
+	// tombstoneMesh.rotation = new THREE.Euler().setFromQuaternion( quaternion );
+}
 
 function updatePoints() {
 	var time = Date.now() * 0.00005;
