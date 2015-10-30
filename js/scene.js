@@ -1,5 +1,6 @@
 // Scene
 var container, camera, controls, scene, renderer;
+var rotSpeed = 0.015;
 
 // Stats
 var stats, statsWidget;
@@ -32,13 +33,13 @@ animate();
 function init() {
 
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-	camera.position.x = 0;
-	camera.position.y = 0;
-	camera.position.z = 2;
-	camera.lookAt(new THREE.Vector3(0, 0, 0));
+	camera.position.x = 2.5;
+	camera.position.y = 2.5;
+	camera.position.z = 2.5;
+	camera.lookAt(new THREE.Vector3(1, 1, 1));
 
 	scene = new THREE.Scene();
-	scene.fog = new THREE.FogExp2(0x1D1D1C, 0.5);
+	scene.fog = new THREE.FogExp2(0x000000, 0.01);
 
 	renderer = new THREE.WebGLRenderer();
 	renderer.setClearColor(scene.fog.color, 1);
@@ -48,20 +49,20 @@ function init() {
 
 	statsWidget = new Stats();
 	statsWidget.setMode(0);
-	stats = document.getElementById('stats');
-	stats.appendChild(statsWidget.domElement);
+	// stats = document.getElementById('stats');
+	// stats.appendChild(statsWidget.domElement);
 
-	controls = new THREE.OrbitControls(camera, renderer.domElement);
-	controls.enableDamping = true;
-	controls.dampingFactor = 0.25;
-	controls.enableZoom = true;
+	// controls = new THREE.OrbitControls(camera, renderer.domElement);
+	// controls.enableDamping = true;
+	// controls.dampingFactor = 0.9;
+	// controls.enableZoom = false;
 
 	initSoundCloud();
 	addPlayerButtons();
 	hellSprites();
 	// singleTombstone();
 	groundIsLava();
-	addText("HALLOWEEN 2015");
+	addText("fragments of a lost trinity");
 	// addTombstones(10);
 	// groundIsWorms();
 
@@ -143,7 +144,7 @@ function groundIsLava() {
 		},
 		time: {
 			type: "f",
-			value: 1.0
+			value: 5.0
 		},
 		resolution: {
 			type: "v2",
@@ -160,7 +161,7 @@ function groundIsLava() {
 		},
 		texture2: {
 			type: "t",
-			value: THREE.ImageUtils.loadTexture("textures/lava/lavatile2.jpg")
+			value: THREE.ImageUtils.loadTexture("textures/lava/lavatile2-red.jpg")
 		}
 	};
 
@@ -179,12 +180,13 @@ function groundIsLava() {
 	});
 
 	// var geometry = new THREE.PlaneGeometry(100, 100, 100, 100);
-	var geometry = new THREE.SphereGeometry(5, 50, 50);
+	var geometry = new THREE.SphereGeometry(3, 50, 50);
 	lavaMesh = new THREE.Mesh(geometry, lavaMaterial);
 	lavaMesh.rotateX((Math.PI / 2) + 0.75);
 	lavaMesh.rotateZ(Math.PI);
+	lavaMesh.position.x = 1;
 	lavaMesh.position.y = 1;
-	lavaMesh.position.z = 2.5;
+	lavaMesh.position.z = 1;
 	scene.add(lavaMesh);
 }
 
@@ -281,8 +283,8 @@ function addText(text) {
 		color: 0xff0000
 	});
 	var mesh = new THREE.Mesh(geometry, material);
-	mesh.position.x = -0.8;
-	mesh.position.y = 0;
+	mesh.position.x = 1;
+	mesh.position.y = 1;
 	mesh.position.z = 1;
 	mesh.scale.x = 0.15;
 	mesh.scale.y = 0.05;
@@ -304,7 +306,9 @@ function addPlayerButtons() {
 		color: 0xFFFFFF
 	});
 	playMesh = new THREE.Mesh(playGeom, playMat);
-	playMesh.position.y = 0;
+	playMesh.position.x = 1;
+	playMesh.position.y = 1;
+	playMesh.position.z = 1;
 	playMesh.scale.x = 0.5;
 	playMesh.scale.y = 0.5;
 	playMesh.scale.z = 0.5;
@@ -443,13 +447,15 @@ function animate() {
 
 	playMesh.rotation.x += 0.01;
 	playMesh.rotation.y += 0.01;
-	controls.update();
+	playMesh.rotation.z += 0.01;
+	// controls.update();
 	updatePoints();
 	updateLava();
+	cameraOrbit();
 	// updateLights();
 	composer.render();
 	// render();
-	statsWidget.update();
+	// statsWidget.update();
 }
 
 function render() {
@@ -479,7 +485,7 @@ function updateLights()
 
 function updateLava()
 {
-	var delta = 5 * clock.getDelta();
+	var delta = 50 * clock.getDelta();
 
 	lavaUniforms.time.value += 0.2 * delta;
 
@@ -487,6 +493,22 @@ function updateLava()
 	// lavaMesh.rotation.y += 0.0125 * delta;
 
 }
+
+function cameraOrbit(){
+
+    var x = camera.position.x,
+        y = camera.position.y,
+        z = camera.position.z;
+
+    camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
+    camera.position.y = y * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+    camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+    
+    console.log("(" + camera.position.x + ", " + camera.position.y + ", " + camera.position.z + ")");
+
+	camera.lookAt(new THREE.Vector3(1, 1, 1));
+    
+} 
 
 function updatePoints() {
 	var time = Date.now() * 0.00005;
