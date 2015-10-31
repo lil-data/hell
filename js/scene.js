@@ -9,7 +9,7 @@ var tick = 0, options, spawnerOptions, particleSystem;
 var stats, statsWidget;
 
 // Player
-var currentPlayer, playMesh, isPlaying;
+var currentPlayer, playMesh, isPlaying = false;
 
 // Mouse
 var mouse = new THREE.Vector2(),
@@ -38,9 +38,9 @@ animate();
 function init() {
 
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-	camera.position.x = 2.5;
-	camera.position.y = 2.5;
-	camera.position.z = 2.5;
+	camera.position.x = -2.5;
+	camera.position.y = -2.5;
+	camera.position.z = -2.5;
 	camera.lookAt(new THREE.Vector3(1, 1, 1));
 
 	scene = new THREE.Scene();
@@ -62,15 +62,15 @@ function init() {
 	controls.dampingFactor = 0.9;
 	controls.enableZoom = true;
 
-	initParticleSystem();
 	initSoundCloud();
+	initParticleSystem();
 	addPlayerButtons();
 	hellSprites();
-	singleTombstone(1.5, 1.5, 1.5, "t1");
-	singleTombstone(1, 1, 1, "t2");
-	singleTombstone(2, 2, 2, "t3");
+	singleTombstone(2, -2, 2, "t1");
+	singleTombstone(-2, 2, -2, "t2");
+	singleTombstone(-2, 2, 2, "t3");
 	groundIsLava();
-	addText("unholy trinity");
+	// addText("The Ministry of Souls");
 	// addTombstones(1);
 	// groundIsWorms();
 
@@ -79,13 +79,26 @@ function init() {
 	addGlitchPass();
 
 	addLights();
+	//add2DText();
 
 	window.addEventListener('resize', onWindowResize, false);
 }
 
+function add2DText()
+{
+	var text = document.getElementById('text');
+	text.style.position = 'absolute';
+	// text.innerHTML = 'Lil Data vs. Spinee vs. DJ Warlord';
+	text.innerHTML = "Lil Data vs. Spinee vs. DJ Warlord - \“Hell On Planet Earth, We Are The Masters\” Says The Ministry Of Souls; 1. HAPPY HALLOWEEN 2. PUMPKING 3. DATA ERROR 4. WHAT IS THE POWER 5. FRAGMENTS OF A LOST TRINITY 6. 1999 7. SPINEE RISING 8. REALLY SOBER 9. CHANGE INTO A DEMON 10. I’LL BE THERE AND YOU’LL BE NEAR 11. BEATS 12. FINAL SCENE";
+
+	// text.style.left = window.innerWidth - 400 + 'px';
+	// text.style.top = window.innerHeight - 50 + 'px';
+
+}
+
 function initParticleSystem() {
 	particleSystem = new THREE.GPUParticleSystem({
-		maxParticles: 250000
+		maxParticles: 25000
 	});
 	scene.add(particleSystem);
 
@@ -95,11 +108,11 @@ function initParticleSystem() {
 		positionRandomness: 0.3,
 		velocity: new THREE.Vector3(),
 		velocityRandomness: 0.5,
-		color: 0xaa88ff,
+		color: 0xFF0205,
 		colorRandomness: 0.2,
 		turbulence: 0.5,
-		lifetime: 2,
-		size: 5,
+		lifetime: 0.5,
+		size: 4,
 		sizeRandomness: 1
 	};
 
@@ -134,18 +147,31 @@ function addLights() {
 	// // light4.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xffaa00 } ) ) );
 	// scene.add( light4 );
 
+	// var lights = [];
+	// lights[0] = new THREE.PointLight(0xffffff, 100, 0);
+	// lights[1] = new THREE.PointLight(0xffffff, 100, 0);
+	// lights[2] = new THREE.PointLight(0xffffff, 100, 0);
+
+	// lights[0].position.set(0, 200, 0);
+	// lights[1].position.set(100, 200, 100);
+	// lights[2].position.set(-100, -200, -100);
+
+	// scene.add(lights[0]);
+	// scene.add(lights[1]);
+	// scene.add(lights[2]);
+
 	var lights = [];
-	lights[0] = new THREE.PointLight(0xffffff, 100, 0);
-	lights[1] = new THREE.PointLight(0xffffff, 100, 0);
-	lights[2] = new THREE.PointLight(0xffffff, 100, 0);
+	lights[0] = new THREE.PointLight( 0xffffff, 1, 0 );
+	lights[1] = new THREE.PointLight( 0xffffff, 1, 0 );
+	lights[2] = new THREE.PointLight( 0xffffff, 1, 0 );
 
-	lights[0].position.set(0, 200, 0);
-	lights[1].position.set(100, 200, 100);
-	lights[2].position.set(-100, -200, -100);
+	lights[0].position.set( 0, 200, 0 );
+	lights[1].position.set( 100, 200, 100 );
+	lights[2].position.set( -100, -200, -100 );
 
-	scene.add(lights[0]);
-	scene.add(lights[1]);
-	scene.add(lights[2]);
+	scene.add( lights[0] );
+	scene.add( lights[1] );
+	scene.add( lights[2] );
 
 }
 
@@ -317,12 +343,13 @@ function addText(text) {
 		color: 0xff0000
 	});
 	var mesh = new THREE.Mesh(geometry, material);
-	mesh.position.x = 1;
-	mesh.position.y = 1;
+	mesh.position.x = -1.2;
+	mesh.position.y = 4.2;
 	mesh.position.z = 1;
-	mesh.scale.x = 0.15;
-	mesh.scale.y = 0.05;
-	mesh.scale.z = 0.15;
+	mesh.scale.x = 0.25;
+	mesh.scale.y = 0.25;
+	mesh.scale.z = 0.25;
+	// mesh.rotateX(Math.PI / 2);
 	scene.add(mesh);
 }
 
@@ -330,15 +357,23 @@ function addPlayerButtons() {
 	var playTexture = new THREE.ImageUtils.loadTexture("textures/play.png");
 	playTexture.wrapS = THREE.RepeatWrapping;
 	playTexture.wrapT = THREE.RepeatWrapping;
-	playTexture.repeat.set(1, 1);
+	playTexture.repeat.set(8, 8);
 
-	var playGeom = new THREE.CubeGeometry(2, 2, 2);
-	var playMat = new THREE.MeshBasicMaterial({
-		map: playTexture,
-		transparent: true,
-		opacity: 0.5,
-		color: 0xFFFFFF
-	});
+	var playMat = new THREE.MeshPhongMaterial({
+					color: 0xFF00FF,
+					emissive: 0x072534,
+					side: THREE.DoubleSide,
+					shading: THREE.FlatShading
+				});
+
+	// var playGeom = new THREE.CubeGeometry(2, 2, 2);
+	var playGeom = new THREE.TetrahedronGeometry( 2, 0 );
+	// var playMat = new THREE.MeshBasicMaterial({
+	// 	map: playTexture,
+	// 	transparent: true,
+	// 	opacity: 0.5,
+	// 	color: 0xFFFFFF
+	// });
 	playMesh = new THREE.Mesh(playGeom, playMat);
 	playMesh.position.x = 1;
 	playMesh.position.y = 1;
@@ -451,25 +486,31 @@ function onMouseDown(event) {
 	mouseDown.x = (event.clientX / window.innerWidth) * 2 - 1;
 	mouseDown.y = -(event.clientY / window.innerHeight) * 2 + 1;
 	mouseDownRay.setFromCamera(mouseDown, camera);
-
+	console.log("onMouseDown");
 	checkMouseDownCollisions();
 
 }
 
 function checkMouseDownCollisions() {
 	var intersects = mouseDownRay.intersectObjects(scene.children);
+	console.log(intersects);
 
 	for (var i = 0; i < intersects.length; i++) {
 		if (intersects[i].object.name == "PlayButton") {
+			console.log(intersects[i].object.name);
 			if (currentPlayer) {
 				if (!isPlaying) {
+					console.log(isPlaying);
 					isPlaying = true;
 					currentPlayer.play();
 					intersects[i].object.material.color.set(0xff0000);
+					return;
 				} else {
+					console.log(isPlaying);
 					isPlaying = false;
 					currentPlayer.pause();
-					intersects[i].object.material.color.set(0xff00ff);
+					intersects[i].object.material.color.set(0xFF00FF);
+					return;
 				}
 			}
 		}
@@ -486,10 +527,10 @@ function animate() {
 	// playMesh.rotation.z += 0.01;
 
 	controls.update();
+	updateLava();
 	updateParticleSystem();
 	updatePoints();
-	updateLava();
-	// cameraOrbit();
+	cameraOrbit();
 	tombstoneOrbit("t1");
 	tombstoneOrbit("t2");
 	tombstoneOrbit("t3");
@@ -565,39 +606,49 @@ function cameraOrbit() {
 		y = camera.position.y,
 		z = camera.position.z;
 
-	camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
-	camera.position.y = y * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
-	camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+	camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed) + 0.0001;
+	camera.position.y = y * Math.cos(rotSpeed) - x * Math.sin(rotSpeed) + 0.0001;
+	camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed) + 0.0001;
 	// console.log("(" + camera.position.x + ", " + camera.position.y + ", " + camera.position.z + ")");
 
 	camera.lookAt(new THREE.Vector3(1, 1, 1));
 }
 
 function tombstoneOrbit(name) {
-	for (var i = 0; i < scene.children.length; i++) {
-		var object = scene.children[i];
+	var object = scene.getObjectByName(name);
 
-		if (object.name == name) {
-			var x = object.position.x,
-				y = object.position.y,
-				z = object.position.z;
+	var x = object.position.x,
+		y = object.position.y,
+		z = object.position.z;
 
-			object.position.x = ((x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed + i / 1000)));
-			object.position.y = ((y * Math.cos(rotSpeed) - x * Math.sin(rotSpeed + i / 1000)));
-			object.position.z = ((z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed + i / 1000)));
+	object.position.x = ((x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed)));
+	object.position.y = ((y * Math.cos(rotSpeed) + x * Math.tan(rotSpeed)));
+	object.position.z = ((z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed)));
 
-			object.rotation.x += 0.025 + i / 1000;
-			object.rotation.y += 0.025 + i / 1000;
-			object.rotation.z += 0.025 + i / 1000;
+	object.rotation.x += 0.0025 + i / 1000;
+	object.rotation.y += 0.0025 + i / 1000;
+	object.rotation.z += 0.0025 + i / 1000;
+
+	var delta = clock.getDelta() * spawnerOptions.timeScale;
+	tick += delta;
+
+	if (tick < 0) tick = 0;
+
+	if (delta > 0) {
+		// options.position.x = Math.sin(tick * spawnerOptions.horizontalSpeed) * 20;
+		// options.position.y = Math.sin(tick * spawnerOptions.verticalSpeed) * 10;
+		// options.position.z = Math.sin(tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed) * 5;
+
+		options.position.x = object.position.x;
+		options.position.y = object.position.y;
+		options.position.z = object.position.z;
+
+		for (var x = 0; x < spawnerOptions.spawnRate * delta; x++) {
+			particleSystem.spawnParticle(options);
 		}
 	}
 
-
-	// tombstoneMesh.rotateOnAxis(new THREE.Vector3( 2, 2, 2 ), 0.1);
-	// console.log(Math.sin(rotSpeed));
-
-	// quaternion = new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1,1,1), Math.PI / 2 );
-	// tombstoneMesh.rotation = new THREE.Euler().setFromQuaternion( quaternion );
+	particleSystem.update(tick);
 }
 
 function updatePoints() {
@@ -624,7 +675,7 @@ function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth, window.innerHeight);
-	animate();
+	// animate();
 }
 
 window.addEventListener('mousemove', onMouseMove, false);
