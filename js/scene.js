@@ -52,15 +52,15 @@ function init() {
 	container = document.getElementById('container');
 	container.appendChild(renderer.domElement);
 
-	statsWidget = new Stats();
-	statsWidget.setMode(0);
+	// statsWidget = new Stats();
+	// statsWidget.setMode(0);
 	// stats = document.getElementById('stats');
 	// stats.appendChild(statsWidget.domElement);
 
-	controls = new THREE.OrbitControls(camera, renderer.domElement);
-	controls.enableDamping = true;
-	controls.dampingFactor = 0.9;
-	controls.enableZoom = true;
+	// controls = new THREE.OrbitControls(camera, renderer.domElement);
+	// controls.enableDamping = true;
+	// controls.dampingFactor = 0.9;
+	// controls.enableZoom = true;
 
 	initSoundCloud();
 	initParticleSystem();
@@ -260,9 +260,14 @@ function initSoundCloud() {
 	SC.initialize({
 		client_id: '4be5f67fb3f99bbf86796c7a713b124b'
 	});
-
-	SC.stream('/tracks/173324934').then(function(player) {
+	// SC.stream('/tracks/173324934').then(function(player) {
+	SC.stream('/tracks/230929280', 's-gRkcD').then(function(player) {
 		currentPlayer = player;
+		currentPlayer.play();
+		isPlaying = true;
+		var obj = scene.getObjectByName("PlayButton");
+		obj.material.color.set(0xff0000);
+
 	}).catch(function() {
 		console.log(arguments);
 	});
@@ -526,7 +531,7 @@ function animate() {
 	// playMesh.rotation.y += 0.01;
 	// playMesh.rotation.z += 0.01;
 
-	controls.update();
+	// controls.update();
 	updateLava();
 	updateParticleSystem();
 	updatePoints();
