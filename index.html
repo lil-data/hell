@@ -3,15 +3,116 @@
 	<head>
 		<title>PC Music – Halloween 2015</title>
 		<link rel="stylesheet" type="text/css" href="css/main.css">
-		<script src="js/sdk-3.0.0.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/three.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/stats.min.js" type="text/javascript" charset="utf-8"></script>
-		<script src="js/OrbitControls.js" type="text/javascript" charset="utf-8"></script>
+		<!--
+		<-.(`-')  (`-')  _     .->    (`-')  _    (`-')  (`-')  _
+		__( OO)  ( OO).-/ (`(`-')/`) (OO ).-/ <-.(OO )  ( OO).-/
+		'-'---.\ (,------.,-`( OO).', / ,---.  ,------,)(,------.
+		| .-. (/  |  .---'|  |\  |  | | \ /`.\ |   /`. ' |  .---'
+		| '-' `.)(|  '--. |  | '.|  | '-'|_.' ||  |_.' |(|  '--.
+		| /`'.  | |  .--' |  |.'.|  |(|  .-.  ||  .   .' |  .--'
+		| '--'  / |  `---.|   ,'.   | |  | |  ||  |\  \  |  `---.
+		`------'  `------'`--'   '--' `--' `--'`--' '--' `------'
+		(`-').-> _  (`-')                      <-.(`-')
+		( OO)_   \-.(OO )     .->        .->    __( OO)      .->
+		(_)--\_)  _.'    \(`-')----. (`-')----. '-'. ,--. ,--.'  ,-.
+		/    _ / (_...--''( OO).-.  '( OO).-.  '|  .'   /(`-')'.'  /
+		\_..`--. |  |_.' |( _) | |  |( _) | |  ||      /)(OO \    /
+		.-._)   \|  .___.' \|  |)|  | \|  |)|  ||  .   '  |  /   /)
+		\       /|  |       '  '-'  '  '  '-'  '|  |\   \ `-/   /`
+		`-----' `--'        `-----'    `-----' `--' '--'   `--'
+		_(`-')    (`-')  _
+		_             .->  ( (OO ).-> ( OO).-/
+		\-,-----.(`-')----. \    .'_ (,------.
+		|  .--./( OO).-.  ''`'-..__) |  .---'
+		/_) (`-')( _) | |  ||  |  ' |(|  '--.
+		||  |OO ) \|  |)|  ||  |  / : |  .--'
+		(_'  '--'\  '  '-'  '|  '-'  / |  `---.
+		`-----'   `-----' `------'  `------'
+		<-.(`-')  (`-')  _                        .->   ,---.
+		__( OO)  ( OO).-/  <-.        .->    (`(`-')/`)|   |
+		'-'---.\ (,------.,--. )  (`-')----. ,-`( OO).',|   |
+		| .-. (/  |  .---'|  (`-')( OO).-.  '|  |\  |  ||   |
+		| '-' `.)(|  '--. |  |OO )( _) | |  ||  | '.|  ||  .'
+		| /`'.  | |  .--'(|  '__ | \|  |)|  ||  |.'.|  |`--'
+		| '--'  / |  `---.|     |'  '  '-'  '|   ,'.   |.--.
+		`------'  `------'`-----'    `-----' `--'   '--'`--'
+		-->
+		<script src="js/lib/sdk-3.0.0.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/lib/three.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/lib/GPUParticleSystem.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/lib/OrbitControls.js" type="text/javascript" charset="utf-8"></script>
 		<!-- <script src="js/FirstPersonControls.js" type="text/javascript" charset="utf-8"></script> -->
+		<script src="js/shaders/CopyShader.js"></script>
+		<script src="js/shaders/DigitalGlitch.js"></script>
+		
+		<script src="js/postprocessing/EffectComposer.js"></script>
+		<script src="js/postprocessing/RenderPass.js"></script>
+		<script src="js/postprocessing/MaskPass.js"></script>
+		<script src="js/postprocessing/ShaderPass.js"></script>
+		<script src="js/postprocessing/GlitchPass.js"></script>
+		<script src="js/postprocessing/BloomPass.js"></script>
+		<script id="fragmentShader" type="x-shader/x-fragment">
+			uniform float time;
+			uniform vec2 resolution;
+			uniform float fogDensity;
+			uniform vec3 fogColor;
+			uniform sampler2D texture1;
+			uniform sampler2D texture2;
+			varying vec2 vUv;
+			void main( void ) {
+				vec2 position = -1.0 + 2.0 * vUv;
+				vec4 noise = texture2D( texture1, vUv );
+				vec2 T1 = vUv + vec2( 1.5, -1.5 ) * time  *0.02;
+				vec2 T2 = vUv + vec2( -0.5, 2.0 ) * time * 0.01;
+				T1.x += noise.x * 2.0;
+				T1.y += noise.y * 2.0;
+				T2.x -= noise.y * 0.2;
+				T2.y += noise.z * 0.2;
+				float p = texture2D( texture1, T1 * 2.0 ).a;
+				vec4 color = texture2D( texture2, T2 * 2.0 );
+				vec4 temp = color * ( vec4( p, p, p, p ) * 2.0 ) + ( color * color - 0.1 );
+				if( temp.r > 1.0 ){ temp.bg += clamp( temp.r - 2.0, 0.0, 100.0 ); }
+				if( temp.g > 1.0 ){ temp.rb += temp.g - 1.0; }
+				if( temp.b > 1.0 ){ temp.rg += temp.b - 1.0; }
+				gl_FragColor = temp;
+				float depth = gl_FragCoord.z / gl_FragCoord.w;
+				const float LOG2 = 1.442695;
+				float fogFactor = exp2( - fogDensity * fogDensity * depth * depth * LOG2 );
+				fogFactor = 1.0 - clamp( fogFactor, 0.0, 1.0 );
+				gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );
+			}
+		</script>
+		<script id="vertexShader" type="x-shader/x-vertex">
+			uniform vec2 uvScale;
+			varying vec2 vUv;
+			void main()
+			{
+				vUv = uvScale * uv;
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+				gl_Position = projectionMatrix * mvPosition;
+			}
+		</script>
+		<script src="js/lib/TextGeometry.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/lib/FontUtils.js" type="text/javascript" charset="utf-8"></script>
+		<script src="fonts/mensch.js" type="text/javascript" charset="utf-8"></script>
+		
+		<script src="js/lib/stats.min.js" type="text/javascript" charset="utf-8"></script>
+		
 		<script src="js/scene.js" type="text/javascript" charset="utf-8" defer></script>
 	</head>
 	<body>
-		<div id="stats"></div>
+		<!-- <div id="stats"></div> -->
 		<div id="container"></div>
+		<div id="title">
+			<img id="curve" src="img/curve.png" width="1000" height="1000" alt="">
+		</div>
+		<div id="sc">
+			<a target="_blank" href="http://soundcloud.com/pcmus/hell"><img src="img/sc.png" width="20" alt=""></a>
+				
+		</div>
+		<!-- <div id="info" class="scroll-left">
+				<p id="text">Lil Data vs. Spinee vs. DJ Warlord - “Hell On Planet Earth, We Are The Masters”</p>
+		</div> -->
+		<!-- </div> -->
 	</body>
 </html>
